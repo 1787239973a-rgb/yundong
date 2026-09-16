@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体态训练跟练</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--accent:#38bdf8;--green:#4ade80;--amber:#fbbf24;--border:#334155;--radius:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header{text-align:center;padding:8px 0 16px}
+header h1{font-size:22px}
+header p{color:var(--muted);font-size:13px;margin-top:4px}
+nav{display:flex;gap:6px;margin-bottom:16px;background:var(--card);border-radius:12px;padding:6px}
+nav button{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);border-radius:8px;font-size:14px;cursor:pointer}
+nav button.active{background:var(--accent);color:#0f172a;font-weight:600}
+section{display:none}
+section.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+h2{font-size:18px;margin-bottom:8px}
+h3{font-size:15px;color:var(--accent);margin-bottom:6px}
+.muted{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0}
+th,td{border:1px solid var(--border);padding:7px 5px;text-align:center}
+th{background:#0f172a;color:var(--accent)}
+.day-head{font-size:20px;font-weight:600;margin-bottom:4px}
+.day-head .th{color:var(--accent);margin-left:6px}
+.vid-switch{display:flex;gap:6px;margin:10px 0;background:#0f172a;border-radius:10px;padding:4px}
+.vid-switch button{flex:1;padding:9px;border:none;background:transparent;color:var(--muted);border-radius:8px;cursor:pointer;font-size:12px}
+.vid-switch button.active{background:var(--accent);color:#0f172a;font-weight:600}
+.vid-frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.vid-frame iframe{width:100%;height:100%;border:none}
+.vid-title{font-size:14px;margin:6px 0}
+.vid-title .dur{color:var(--amber);font-size:12px;margin-left:6px}
+.ex-points{background:#0f172a;border-radius:10px;padding:12px;margin:12px 0;font-size:14px;text-align:left}
+.done-btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:var(--green);color:#0f172a;font-size:16px;font-weight:600;cursor:pointer;margin-top:8px}
+.done-btn.checked{background:#14532d;color:var(--green);border:1px solid var(--green)}
+.link-btn{display:inline-block;padding:8px 14px;background:#0f172a;border:1px solid var(--border);border-radius:8px;color:var(--accent);text-decoration:none;font-size:13px;margin:4px 4px 0 0;cursor:pointer}
+input[type=text],input[type=url]{width:100%;padding:10px;background:#0f172a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin:4px 0}
+.streak-big{text-align:center;padding:12px}
+.streak-big .num{font-size:42px;font-weight:700;color:var(--green)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:8px 0}
+.cal-grid .day{text-align:center;padding:8px 2px;border-radius:6px;font-size:11px;background:#0f172a}
+.cal-grid .day.done{background:#14532d;color:var(--green)}
+.cal-grid .day.today{outline:2px solid var(--accent)}
+.note{margin-top:8px}
+details{margin:6px 0}
+summary{cursor:pointer;color:var(--accent);font-size:13px;padding:6px 0}
+.warn{background:#3b2f0f;border:1px solid #92610a;border-radius:8px;padding:10px;font-size:13px;color:var(--amber);margin:8px 0}
+.tip{background:#0f2a1f;border:1px solid #1e6b4a;border-radius:8px;padding:10px;font-size:13px;color:#86efac;margin:8px 0}
+.lib-item{border-left:3px solid var(--accent);padding-left:12px;margin-bottom:14px}
+.lib-item .pts{font-size:13px;color:var(--muted);margin:4px 0}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;margin:2px}
+.tag.呼吸{background:#1e3a5f;color:#7dd3fc}.tag.颈{background:#3b2f4f;color:#c084fc}.tag.胸{background:#1e4d3b;color:#6ee7b7}.tag.骨盆{background:#4d3b1e;color:#fcd34d}.tag.足{background:#4f2f2f;color:#fca5a5}.tag.背{background:#2f4d4f;color:#5eead4}.tag.臀{background:#4f3b2f;color:#fdba74}.tag.核心{background:#2f3b4f;color:#93c5fd}.tag.腿{background:#3b4d2f;color:#bef264}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>🦴 体态训练跟练</h1><p>每日固定视频跟练 · 聚焦体态改善</p></header>
+<nav>
+<button class="active" data-tab="overview">计划总览</button>
+<button data-tab="player">今日跟练</button>
+<button data-tab="log">打卡记录</button>
+<button data-tab="library">要点速查</button>
+</nav>
+
+<section id="overview" class="active">
+<div class="card">
+<h2>🗓️ 每周固定视频计划</h2>
+<p class="muted">每天 1-2 条固定跟练视频，按部位轮换，全部为矫正/拉伸/松解类，<b>不含心肺有氧</b>。</p>
+<table>
+<tr><th></th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr>
+<tr><td>主题</td><td>颈椎<br>头前倾</td><td>驼背<br>圆肩</td><td>颈背<br>肩胛</td><td>骨盆<br>前倾</td><td>颈肩<br>松解</td><td>完整<br>体态</td><td>轻量<br>拉伸</td></tr>
+<tr><td>视频</td><td>2条<br>~16′</td><td>2条<br>~13′</td><td>2条<br>~16′</td><td>2条<br>~13′</td><td>2条<br>~17′</td><td>1条<br>~27′</td><td>2条<br>~15′</td></tr>
+<tr><td>提醒</td><td colspan="7" class="muted">每天 20:30 跟练打卡</td></tr>
+</table>
+</div>
+<div class="card">
+<h2>💡 核心原则</h2>
+<ul style="list-style:disc;padding-left:20px;font-size:14px">
+<li><b>呼吸是开关</b>：肋骨横向扩张而非耸肩，膈肌主导，改善肋骨外扩与骨盆前倾</li>
+<li><b>跟视频时</b>：动作慢、控制优于幅度，疼痛即停</li>
+<li><b>四点对齐</b>：收下巴-肋骨下沉-骨盆中立-足弓激活，贯穿日常</li>
+<li><b>频率>强度</b>：每天 15-20 分钟胜过每周一次猛练</li>
+</ul>
+</div>
+<div class="warn">⚠️ 颈椎 C2/3–C5/6 椎间盘突出：颈部动作幅度减半、禁止负重后仰/极端转头、疼痛即停。训练前请让医生/康复师确认。</div>
+<div class="tip">✅ 已为你预填 B站跟练视频，可直接播放；若某条视频失效，点"替换这条视频"粘贴新链接即可。</div>
+</section>
+
+<section id="player">
+<div class="card" id="playerCard"></div>
+</section>
+
+<section id="log">
+<div class="card streak-big">
+<div class="muted">连续打卡天数</div>
+<div class="num" id="streakNum">0</div>
+<div class="muted" id="totalNum">累计 0 天</div>
+</div>
+<div class="card">
+<h2>📅 近 30 天</h2>
+<div class="cal-grid" id="calGrid"></div>
+</div>
+<div class="card">
+<h2>✅ 今日完成</h2>
+<button class="done-btn" id="doneToday">完成今日打卡</button>
+<input type="text" id="noteInput" placeholder="今日感受 / 痛点记录…">
+<button class="link-btn" id="saveNote">保存笔记</button>
+<div class="muted note" id="todayNote"></div>
+</div>
+</section>
+
+<section id="library">
+<div class="card" id="libContent"></div>
+</section>
+</div>
+
+<script>
+var PLAN=[
+{d:"周日",theme:"轻量拉伸·恢复",vids:[{bvid:"BV1A54y1S7mn",t:"5分钟全身体态纠正训练·起床必备",dur:"5:00"},{bvid:"BV1RK411u7Re",t:"10分钟泡沫轴全身按摩跟练精讲",dur:"10:00"}],pts:"泡沫轴只滚肌肉不滚关节/腰椎；拉伸配合深呼吸；放松为主，不强求幅度。"},
+{d:"周一",theme:"颈椎·头前倾",vids:[{bvid:"BV1ib421q72V",t:"5个动作改善头前倾含胸驼背·7天见效",dur:"7:05"},{bvid:"BV1Jr4y1U7R2",t:"Yuuka Sagawa 日本体态矫正·脖子前倾富贵包",dur:"8:58"}],pts:"收下巴而非仰头；拉伸轻柔不弹震；颈部椎间盘突出者幅度减半、疼痛即停；耳垂对齐肩峰。"},
+{d:"周二",theme:"驼背·圆肩",vids:[{bvid:"BV1mX4y1C7HC",t:"5分钟改善肩膀内扣+脖子前倾",dur:"5:25"},{bvid:"BV1uf4y187x1",t:"帕梅拉 8min 颈背拉伸·改善驼背脖颈前伸",dur:"8:00"}],pts:"开胸前侧、肩胛后缩下沉；胸椎伸展不塌腰；感受胸肌被拉开而非耸肩。"},
+{d:"周三",theme:"颈背·肩胛",vids:[{bvid:"BV1x34y1J7bx",t:"体态大师·改善脖子前倾圆肩驼背富贵包",dur:"8:08"},{bvid:"BV1zq4y197rR",t:"YTWL矫正训练·告别圆肩驼背",dur:""}],pts:"Y-T-W 时肩胛主动后缩下沉，不靠蛮力抬臂；颈部保持中立不前倾。"},
+{d:"周四",theme:"骨盆前倾",vids:[{bvid:"BV14K411H7RQ",t:"韩小四 8分钟矫正骨盆前倾",dur:"8:00"},{bvid:"BV1fp4y1U7qG",t:"每天5分钟告别骨盆前倾",dur:"5:00"}],pts:"骨盆找中立而非死命后倾；臀肌主动发力；拉伸髂腰肌时骨盆后倾、核心收紧不塌腰。"},
+{d:"周五",theme:"颈肩·坐姿松解",vids:[{bvid:"BV1vu411e7fC",t:"10分钟坐姿拉伸+自我按摩·缓解肩颈僵硬",dur:"10:00"},{bvid:"BV1ib421q72V",t:"5个动作改善头前倾含胸驼背",dur:"7:05"}],pts:"坐姿拉伸配合自我按摩放松上斜方/胸锁乳突；保持腹式呼吸，肋骨横向扩张。"},
+{d:"周六",theme:"完整体态·加量",vids:[{bvid:"BV14w411d7H5",t:"C戈体态矫正7天·纯净跟做有提示音",dur:"26:34"}],pts:"全程维持收下巴-肋骨下沉-骨盆中立-足弓激活四点对齐；动作慢、控制优于幅度。"}
+];
+var LS_KEY="posture-coach-log-v2";
+var VID_KEY="pc-vid-";
+var curVi=0;
+function $(id){return document.getElementById(id);}
+function todayIdx(){return new Date().getDay();}
+function todayKey(){return new Date().toISOString().slice(0,10);}
+function getLog(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return{};}}
+function saveLog(o){localStorage.setItem(LS_KEY,JSON.stringify(o));}
+function getVidEmbed(dayI,slotI){
+var ov=localStorage.getItem(VID_KEY+dayI+"-"+slotI);
+if(ov)return ov;
+var p=PLAN[dayI].vids[slotI];
+if(p.bvid)return "https://player.bilibili.com/player.html?bvid="+p.bvid+"&page=1&high_quality=1&danmaku=0&autoplay=0";
+return "";
+}
+function parseEmbed(v){
+var m;m=v.match(/bilibili\.com\/video\/(BV[\w]+)/);if(m)return "https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";
+m=v.match(/bvid=(BV[\w]+)/);if(m)return "https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";
+m=v.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);if(m)return "https://www.youtube.com/embed/"+m[1];
+return"";
+}
+document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("active");});document.querySelectorAll("section").forEach(function(x){x.classList.remove("active");});b.classList.add("active");$(b.dataset.tab).classList.add("active");if(b.dataset.tab==="player")renderToday();if(b.dataset.tab==="log")renderLog();if(b.dataset.tab==="library")renderLibrary();};});
+function renderToday(){
+var p=PLAN[todayIdx()];
+var log=getLog();var k=todayKey();var done=log[k]&&log[k].done;
+var html='<div class="day-head">'+p.d+'<span class="th">'+p.theme+'</span></div>';
+html+='<div class="muted">共'+p.vids.length+'条视频，逐条跟着练</div>';
+if(p.vids.length>1){
+html+='<div class="vid-switch" id="vidSwitch">';
+p.vids.forEach(function(v,i){html+='<button class="'+(i===curVi?"active":"")+'" data-vi="'+i+'">视频'+(i+1)+(v.dur?(" "+v.dur):"")+'</button>';});
+html+='</div>';
+}
+html+='<div class="vid-frame"><iframe id="vidFrame" src="'+getVidEmbed(todayIdx(),curVi)+'" allowfullscreen scrolling="no"></iframe></div>';
+html+='<div class="vid-title">▶ '+p.vids[curVi].t+(p.vids[curVi].dur?'<span class="dur">'+p.vids[curVi].dur+'</span>':'')+'</div>';
+html+='<details><summary>替换这条视频（粘贴 B站/YouTube 链接）</summary>';
+html+='<input type="url" id="repInput" placeholder="粘贴 bilibili.com/video/BV... 或 youtube.com/watch?v=...">';
+html+='<button class="link-btn" id="repBtn">替换并保存</button> <button class="link-btn" id="resetBtn">恢复默认</button></details>';
+html+='<div class="ex-points">📌 今日要点：'+p.pts+'</div>';
+html+='<button class="done-btn'+(done?" checked":"")+'" id="doneBtn">'+(done?"✅ 今日已完成":"完成今日打卡")+'</button>';
+$("playerCard").innerHTML=html;
+if(p.vids.length>1){document.querySelectorAll("#vidSwitch button").forEach(function(b){b.onclick=function(){curVi=parseInt(b.dataset.vi);renderToday();};});}
+$("doneBtn").onclick=function(){var log=getLog();var k=todayKey();log[k]=log[k]||{done:false,note:""};log[k].done=!log[k].done;saveLog(log);renderToday();renderLog();};
+$("repBtn").onclick=function(){var e=parseEmbed($("repInput").value.trim());if(!e){alert("无法识别链接，请用完整的 bilibili.com/video/BV... 或 youtube.com/watch?v=... 链接");return;}localStorage.setItem(VID_KEY+todayIdx()+"-"+curVi,e);curVi=curVi;renderToday();};
+$("resetBtn").onclick=function(){localStorage.removeItem(VID_KEY+todayIdx()+"-"+curVi);renderToday();};
+}
+function renderLog(){
+var log=getLog();var k=todayKey();var today=log[k]||{done:false,note:""};
+var streak=0;var d=new Date();
+if(!(log[k]&&log[k].done)){d.setDate(d.getDate()-1);}
+while(true){var key=d.toISOString().slice(0,10);if(log[key]&&log[key].done){streak++;d.setDate(d.getDate()-1);}else break;}
+$("streakNum").textContent=streak;
+var total=Object.keys(log).filter(function(key){return log[key].done;}).length;
+$("totalNum").textContent="累计 "+total+" 天";
+$("doneToday").textContent=today.done?"✅ 今日已完成":"完成今日打卡";
+$("doneToday").classList.toggle("checked",today.done);
+$("todayNote").textContent=today.note?("📝 "+today.note):"";
+var grid=$("calGrid");grid.innerHTML="";
+var now=new Date();
+for(var i=29;i>=0;i--){var dd=new Date(now);dd.setDate(now.getDate()-i);var key2=dd.toISOString().slice(0,10);var dn=log[key2]&&log[key2].done;var isT=key2===k;grid.innerHTML+='<div class="day'+(dn?" done":"")+(isT?" today":"")+'">'+(dd.getMonth()+1)+"/"+dd.getDate()+"</div>";}
+}
+$("doneToday").onclick=function(){var log=getLog();var k=todayKey();log[k]=log[k]||{done:false,note:""};log[k].done=!log[k].done;saveLog(log);renderLog();renderToday();};
+$("saveNote").onclick=function(){var log=getLog();var k=todayKey();log[k]=log[k]||{done:false,note:""};log[k].note=$("noteInput").value.trim();saveLog(log);renderLog();};
+var EX={core:[{name:"腹式呼吸重建",cat:"呼吸",unit:"2分钟",pts:"鼻吸4秒肋骨横向扩张不耸肩，口呼6秒缓慢收肋"},{name:"收下巴(仰卧)",cat:"颈",unit:"10次",pts:"水平收下巴挤出双下巴感，保持3秒，强化颈深屈肌"},{name:"胸椎伸展(泡沫轴)",cat:"胸",unit:"2分钟",pts:"泡沫轴置胸椎中段仰卧微后仰滚动，只滚胸椎"},{name:"门框开胸",cat:"胸",unit:"30秒×侧",pts:"前臂贴门框90度弓步前倾开胸前侧"},{name:"骨盆前后倾感知",cat:"骨盆",unit:"1分钟",pts:"仰卧屈膝找中立位停留，建立本体感觉"},{name:"短足练习",cat:"足",unit:"30秒×侧",pts:"脚趾抓地不卷趾，主动提足弓"}],strength:[{name:"Y-T-W举",cat:"背",unit:"12次×3组",pts:"俯卧YTW抬臂，肩胛后缩下沉"},{name:"臀桥",cat:"臀",unit:"12次×3组",pts:"蹬地抬髋顶峰夹臀非顶腰"},{name:"死虫子",cat:"核心",unit:"10次×侧",pts:"对侧手脚下放贴地不塌腰"},{name:"蚌式开合",cat:"腿",unit:"15次×侧",pts:"侧卧屈膝膝上开合，激活臀中肌"},{name:"跪姿髋屈肌拉伸",cat:"骨盆",unit:"30秒×侧",pts:"弓步跪姿骨盆后倾前移拉伸髂腰肌"}]};
+function renderLibrary(){
+var c=$("libContent");var h="<h2>📚 动作要点速查</h2><p class=muted>跟视频时的动作要领参考，帮助感知标准动作与幅度。</p>";
+[["core","核心日常"],["strength","强化训练(周一三五)"]].forEach(function(pair){h+="<h3>"+pair[1]+"</h3>";EX[pair[0]].forEach(function(x){h+='<div class="lib-item"><b>'+x.name+'</b> <span class="tag '+x.cat+'">'+x.cat+'</span> <span class="muted">'+x.unit+'</span><div class="pts">'+x.pts+'</div></div>';});});
+c.innerHTML=h;
+}
+renderLog();
+</script>
+</body>
+</html>
