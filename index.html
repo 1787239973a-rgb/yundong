@@ -148,7 +148,7 @@ function todayIdx(){return new Date().getDay();}
 function todayKey(){return new Date().toISOString().slice(0,10);}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function parseEmbed(v){var m;m=v.match(/bilibili\.com\/video\/(BV[\w]+)/);if(m)return"https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";m=v.match(/bvid=(BV[\w]+)/);if(m)return"https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";m=v.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);if(m)return"https://www.youtube.com/embed/"+m[1];return"";}
-function getVidEmbed(dayI,slotI){var ov=localStorage.getItem("pc-vid-"+dayI+"-"+slotI);if(ov)return ov;var p=PLAN[dayI];if(p&&p.vids[slotI]&&p.vids[slotI].bvid)return"https://player.bilibili.com/player.html?bvid="+p.vids[slotI].bvid+"&page=1&high_quality=1&danmaku=0&autoplay=0";return"";}
+function getVidEmbed(dayI,slotI){var ov=localStorage.getItem("pc-vid-"+dayI+"-"+slotI);if(ov)return ov;var p=PLAN[dayI];if(p&&p.videos[slotI]&&p.videos[slotI].bvid)return"https://player.bilibili.com/player.html?bvid="+p.videos[slotI].bvid+"&page=1&high_quality=1&danmaku=0&autoplay=0";return"";}
 
 // ---- Tab navigation: synchronous, before any async ----
 function switchTab(tabName){
@@ -283,7 +283,7 @@ function renderOverview(){
   var h='<table><tr><th></th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr>';
   var order=[1,2,3,4,5,6,0];
   h+='<tr><td>主题</td>';order.forEach(function(i){h+='<td>'+(PLAN[i]?PLAN[i].theme.replace(/·/g,'<br>'):'')+'</td>';});h+='</tr>';
-  h+='<tr><td>视频</td>';order.forEach(function(i){var n=PLAN[i]?PLAN[i].vids.length:0;h+='<td>'+n+'条</td>';});h+='</tr>';
+  h+='<tr><td>视频</td>';order.forEach(function(i){var n=PLAN[i]?PLAN[i].videos.length:0;h+='<td>'+n+'条</td>';});h+='</tr>';
   h+='<tr><td>提醒</td><td colspan="7" class="muted">每天 20:30 App 推送</td></tr></table>';
   t.innerHTML=h;
 }
@@ -295,13 +295,13 @@ function renderToday(){
   var p=PLAN[todayIdx()];if(!p){pc.innerHTML='<div class="muted">今日无计划</div>';return;}
   var log=allLogs.find(function(l){return l.date===todayKey();});
   var done=log?log.done:false;
-  var vid=p.vids[curVi]||p.vids[0];if(!vid){pc.innerHTML='<div class="muted">无视频</div>';return;}
-  if(curVi>=p.vids.length)curVi=0;
+  var vid=p.videos[curVi]||p.videos[0];if(!vid){pc.innerHTML='<div class="muted">无视频</div>';return;}
+  if(curVi>=p.videos.length)curVi=0;
   var h='<div class="day-head">'+p.name+'<span class="th">'+p.theme+'</span></div>';
-  h+='<div class="muted">共'+p.vids.length+'条视频，逐条跟着练</div>';
-  if(p.vids.length>1){
+  h+='<div class="muted">共'+p.videos.length+'条视频，逐条跟着练</div>';
+  if(p.videos.length>1){
     h+='<div class="vid-switch" id="vidSwitch">';
-    p.vids.forEach(function(v,i){h+='<button class="'+(i===curVi?"active":"")+'" data-vi="'+i+'">视频'+(i+1)+(v.dur?(" "+v.dur):"")+'</button>';});
+    p.videos.forEach(function(v,i){h+='<button class="'+(i===curVi?"active":"")+'" data-vi="'+i+'">视频'+(i+1)+(v.dur?(" "+v.dur):"")+'</button>';});
     h+='</div>';
   }
   h+='<div class="vid-frame"><iframe id="vidFrame" src="'+getVidEmbed(todayIdx(),curVi)+'" allowfullscreen scrolling="no"></iframe></div>';
@@ -310,7 +310,7 @@ function renderToday(){
   h+='<div class="ex-points">📌 今日要点：'+p.points+'</div>';
   h+='<button class="done-btn'+(done?" checked":"")+'" id="doneBtn">'+(done?"✅ 今日已完成":"完成今日打卡")+'</button>';
   pc.innerHTML=h;
-  if(p.vids.length>1){document.querySelectorAll("#vidSwitch button").forEach(function(b){b.onclick=function(){curVi=parseInt(b.dataset.vi);renderToday();};});}
+  if(p.videos.length>1){document.querySelectorAll("#vidSwitch button").forEach(function(b){b.onclick=function(){curVi=parseInt(b.dataset.vi);renderToday();};});}
   var db=$("doneBtn");
   if(db)db.onclick=async function(){if(!user){alert("请先在顶部登录，打卡才能跨设备同步。");return;}todayLog.done=!todayLog.done;await persist();renderToday();};
   var rb=$("repBtn");
