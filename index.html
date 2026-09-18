@@ -55,16 +55,9 @@ summary{cursor:pointer;color:var(--accent);font-size:13px;padding:6px 0}
 .rec.ok{background:#0f2a1f;border:1px solid #1e6b4a;color:#86efac}
 .lib-item{border-left:3px solid var(--accent);padding-left:12px;margin-bottom:14px}
 .lib-item .pts{font-size:13px;color:var(--muted);margin:4px 0}
-.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;margin:2px}
-.tag.呼吸{background:#1e3a5f;color:#7dd3fc}.tag.颈{background:#3b2f4f;color:#c084fc}.tag.胸{background:#1e4d3b;color:#6ee7b7}.tag.骨盆{background:#4d3b1e;color:#fcd34d}.tag.足{background:#4f2f2f;color:#fca5a5}.tag.背{background:#2f4d4f;color:#5eead4}.tag.臀{background:#4f3b2f;color:#fdba74}.tag.核心{background:#2f3b4f;color:#93c5fd}.tag.腿{background:#3b4d2f;color:#bef264}
 .opt-row{display:flex;gap:6px;margin:6px 0;flex-wrap:wrap}
 .opt-row label{flex:1;min-width:80px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#0f172a;cursor:pointer;font-size:14px;text-align:center}
 .opt-row label.on{border-color:var(--accent);background:#0f2a3f;color:var(--accent)}
-.auth-hint{text-align:center;font-size:12px;margin:4px 0 8px;color:var(--muted)}
-.auth-hint b{color:var(--green)}
-.login-badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;margin-left:6px;vertical-align:middle}
-.login-badge.free{background:#0f2a1f;color:#86efac}
-.login-badge.need{background:#3b1f0f;color:var(--amber)}
 textarea{width:100%;padding:10px;background:#0f172a;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;margin:4px 0;resize:vertical;min-height:60px}
 </style>
 </head>
@@ -74,12 +67,11 @@ textarea{width:100%;padding:10px;background:#0f172a;border:1px solid var(--borde
 <h1>🦴 体态训练跟练</h1>
 <p>每日固定视频跟练 · 跨设备同步</p>
 <div id="authBar" class="auth-bar"></div>
-<div id="authHint" class="auth-hint"></div>
 </header>
 <nav>
 <button class="active" data-tab="overview">计划总览</button>
-<button data-tab="player">今日跟练 <span class="login-badge free">免登录</span></button>
-<button data-tab="log">打卡反馈 <span class="login-badge need">需登录</span></button>
+<button data-tab="player">今日跟练</button>
+<button data-tab="log">打卡反馈</button>
 <button data-tab="library">要点速查</button>
 </nav>
 
@@ -143,7 +135,8 @@ textarea{width:100%;padding:10px;background:#0f172a;border:1px solid var(--borde
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 const SB_URL="https://fazojrlwbnziixmafrdr.supabase.co";
 const SB_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhem9qcmx3Ym56aWl4bWFmcmRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2MzY2MjYsImV4cCI6MjEwNTIxMjYyNn0.EuwhkHaIZBQbQMRNy21ywwUKQg6IXHVuSiIMIisJKz0";
-const sb=createClient(SB_URL,SB_KEY);
+let sb;
+try{ sb=createClient(SB_URL,SB_KEY); }catch(e){ console.error("Supabase init failed",e); }
 
 let PLAN=[], SITE_URL="", session=null, user=null;
 let todayLog={done:false,difficulty:"",pain:"",note:""};
@@ -153,11 +146,11 @@ let curVi=0;
 function $(id){return document.getElementById(id);}
 function todayIdx(){return new Date().getDay();}
 function todayKey(){return new Date().toISOString().slice(0,10);}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function parseEmbed(v){var m;m=v.match(/bilibili\.com\/video\/(BV[\w]+)/);if(m)return"https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";m=v.match(/bvid=(BV[\w]+)/);if(m)return"https://player.bilibili.com/player.html?bvid="+m[1]+"&page=1&high_quality=1&danmaku=0&autoplay=0";m=v.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);if(m)return"https://www.youtube.com/embed/"+m[1];return"";}
-function getVidEmbed(dayI,slotI){var ov=localStorage.getItem("pc-vid-"+dayI+"-"+slotI);if(ov)return ov;var p=PLAN[dayI].vids[slotI];if(p&&p.bvid)return"https://player.bilibili.com/player.html?bvid="+p.bvid+"&page=1&high_quality=1&danmaku=0&autoplay=0";return"";}
+function getVidEmbed(dayI,slotI){var ov=localStorage.getItem("pc-vid-"+dayI+"-"+slotI);if(ov)return ov;var p=PLAN[dayI];if(p&&p.vids[slotI]&&p.vids[slotI].bvid)return"https://player.bilibili.com/player.html?bvid="+p.vids[slotI].bvid+"&page=1&high_quality=1&danmaku=0&autoplay=0";return"";}
 
-// ---- 初始化 ----
-// Tab navigation — set up IMMEDIATELY (synchronous, before any async)
+// ---- Tab navigation: synchronous, before any async ----
 function switchTab(tabName){
   document.querySelectorAll("nav button").forEach(function(x){x.classList.remove("active");});
   document.querySelectorAll("section").forEach(function(x){x.classList.remove("active");});
@@ -165,80 +158,145 @@ function switchTab(tabName){
   var sec=$(tabName);
   if(btn)btn.classList.add("active");
   if(sec)sec.classList.add("active");
-  try{if(tabName==="player"&&PLAN.length)renderToday();if(tabName==="log")renderLog();if(tabName==="library")renderLibrary();}catch(e){console.error("render error:",e);}
+  try{
+    if(tabName==="player"&&PLAN.length)renderToday();
+    if(tabName==="log")renderLog();
+    if(tabName==="library")renderLibrary();
+  }catch(e){console.error("render error:",e);}
 }
-document.querySelectorAll("nav button").forEach(function(b){b.onclick=function(){switchTab(b.dataset.tab);};});
+document.querySelectorAll("nav button").forEach(function(b){
+  b.onclick=function(){switchTab(b.dataset.tab);};
+});
 
+// ---- init ----
 async function init(){
-  try{const j=await (await fetch("plan.json")).json();PLAN=j.days;SITE_URL=j.siteUrl;}
-  catch(e){PLAN=[];var pc=$("playerCard");if(pc)pc.innerHTML='<div class="warn">计划数据加载失败，请刷新。</div>';}
-  try{const{data}=await sb.auth.getSession();if(data&&data.session){onAuth(data.session);}else{onLogout();}}catch(e){console.error("Auth error:",e);onLogout();}
-  try{sb.auth.onAuthStateChange(function(_e,s){if(s){onAuth(s);}else{onLogout();}});}catch(e){console.error("Auth listener error:",e);}
+  try{
+    const j=await (await fetch("plan.json")).json();
+    PLAN=j.days;SITE_URL=j.siteUrl;
+  }catch(e){
+    PLAN=[];
+    console.error("plan.json load failed:",e);
+  }
+  if(sb){
+    try{
+      const{data}=await sb.auth.getSession();
+      if(data&&data.session){onAuth(data.session);}else{onLogout();}
+    }catch(e){console.error("Auth error:",e);onLogout();}
+    try{
+      sb.auth.onAuthStateChange(function(_e,s){
+        if(s){onAuth(s);}else{onLogout();}
+      });
+    }catch(e){console.error("Auth listener error:",e);}
+  }else{
+    onLogout();
+  }
   renderOverview();
 }
 init();
 
-// ---- 认证 ----
+// ---- Auth ----
 function renderAuth(){
-  var bar=$("authBar"),hint=$("authHint");
-  if(!bar)return;
+  var bar=$("authBar");if(!bar)return;
   if(user){
     bar.innerHTML='<span class="muted">👤 '+escapeHtml(user.email)+'</span><button class="link-btn" id="logoutBtn">退出</button>';
-    if(hint)hint.innerHTML='✅ 已登录 · 打卡与反馈跨设备同步中';
     var lb=$("logoutBtn");if(lb)lb.onclick=function(){sb.auth.signOut();};
   }else{
     bar.innerHTML='<input id="emailIn" type="email" placeholder="邮箱"><input id="passIn" type="password" placeholder="密码"><button class="link-btn" id="signupBtn">注册</button><button class="link-btn" id="loginBtn">登录</button>';
-    if(hint)hint.innerHTML='💡 视频跟练<b>免登录</b>可看 · 打卡/反馈需登录后跨设备同步';
-    var li=$("loginBtn"),si=$("signupBtn");if(li)li.onclick=doLogin;if(si)si.onclick=doSignup;
+    var li=$("loginBtn"),si=$("signupBtn");
+    if(li)li.onclick=doLogin;
+    if(si)si.onclick=doSignup;
   }
 }
-function escapeHtml(s){return (s||"").replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
-async function doLogin(){var e=$("emailIn").value.trim(),p=$("passIn").value;if(!e||!p){alert("请输入邮箱和密码");return;}var r=await sb.auth.signInWithPassword({email:e,password:p});if(r.error){var msg=r.error.message;if(msg.indexOf("Email not confirmed")>=0){msg="邮箱未验证，无法登录。\n\n两种解决方式（任选其一）：\n\n1️⃣ 去邮箱（含垃圾邮件夹）找验证邮件，点链接激活\n2️⃣ 在 Supabase 后台关闭验证（最简单）：\n   Authentication → Providers → Email → 关闭 Confirm email → Save\n\n关闭后重新登录即可，无需重新注册。";}alert(msg);}}
-async function doSignup(){var e=$("emailIn").value.trim(),p=$("passIn").value;if(!e||!p){alert("请输入邮箱和密码");return;}var r=await sb.auth.signUp({email:e,password:p});if(r.error){alert(r.error.message);return;}if(r.data.user){if(r.data.session){alert("注册成功！已自动登录。");}else{alert("注册成功！\n\n请去邮箱（含垃圾邮件夹）找验证邮件，点链接后再登录。\n\n或者在 Supabase 后台关闭 Confirm email 后直接登录。");}}}
-function onAuth(s){session=s;user=s.user;renderAuth();renderLogAccount();loadLogs();}
-function onLogout(){session=null;user=null;todayLog={done:false,difficulty:"",pain:"",note:""};allLogs=[];renderAuth();renderLogAccount();renderLog();renderToday();}
+async function doLogin(){
+  var e=$("emailIn").value.trim(),p=$("passIn").value;
+  if(!e||!p){alert("请输入邮箱和密码");return;}
+  try{
+    var r=await sb.auth.signInWithPassword({email:e,password:p});
+    if(r.error){
+      var msg=r.error.message;
+      if(msg.indexOf("Email not confirmed")>=0){
+        msg="邮箱未验证。请在 Supabase 后台关闭 Confirm email，或去邮箱点验证链接。";
+      }
+      alert(msg);
+    }else if(r.data&&r.data.user){
+      onAuth(r.data);
+    }
+  }catch(e){
+    console.error("login error:",e);
+    alert("登录出错: "+e.message);
+  }
+}
+async function doSignup(){
+  var e=$("emailIn").value.trim(),p=$("passIn").value;
+  if(!e||!p){alert("请输入邮箱和密码");return;}
+  try{
+    var r=await sb.auth.signUp({email:e,password:p});
+    if(r.error){alert(r.error.message);return;}
+    if(r.data&&r.data.session){
+      onAuth(r.data);
+    }else{
+      alert("注册成功！请在 Supabase 后台关闭 Confirm email 后直接登录。");
+    }
+  }catch(e){
+    console.error("signup error:",e);
+    alert("注册出错: "+e.message);
+  }
+}
+function onAuth(s){
+  session=s;user=s.user;
+  renderAuth();renderLogAccount();
+  loadLogs();
+}
+function onLogout(){
+  session=null;user=null;
+  todayLog={done:false,difficulty:"",pain:"",note:""};
+  allLogs=[];
+  renderAuth();renderLogAccount();renderLog();renderToday();
+}
 
-// ---- 数据 ----
+// ---- Data ----
 async function loadLogs(){
   if(!user||!sb)return;
   try{
-  var r=await sb.from("logs").select("date,day_idx,theme,done,difficulty,pain,note").order("date",{ascending:false}).limit(90);
-  allLogs=r.data||[];
-  var t=allLogs.find(function(l){return l.date===todayKey();});
-  todayLog = t?{done:!!t.done,difficulty:t.difficulty||"",pain:t.pain||"",note:t.note||""}:{done:false,difficulty:"",pain:"",note:""};
+    var r=await sb.from("logs").select("date,day_idx,theme,done,difficulty,pain,note").order("date",{ascending:false}).limit(90);
+    allLogs=r.data||[];
+    var t=allLogs.find(function(l){return l.date===todayKey();});
+    todayLog = t?{done:!!t.done,difficulty:t.difficulty||"",pain:t.pain||"",note:t.note||""}:{done:false,difficulty:"",pain:"",note:""};
   }catch(e){console.error("loadLogs error:",e);}
   renderLog();renderToday();
 }
 async function persist(){
   if(!user||!sb)return;
   try{
-  var r=await sb.from("logs").upsert({user_id:user.id,date:todayKey(),day_idx:todayIdx(),theme:PLAN[todayIdx()]?PLAN[todayIdx()].theme:"",done:todayLog.done,difficulty:todayLog.difficulty,pain:todayLog.pain,note:todayLog.note},{onConflict:"user_id,date"});
-  if(r.error){console.error(r.error);alert("保存失败: "+r.error.message);return;}
-  // refresh allLogs locally
-  var ex=allLogs.find(function(l){return l.date===todayKey();});
-  if(!ex){ex={date:todayKey(),day_idx:todayIdx(),theme:PLAN[todayIdx()]?PLAN[todayIdx()].theme:""};allLogs.unshift(ex);}
-  ex.done=todayLog.done;ex.difficulty=todayLog.difficulty;ex.pain=todayLog.pain;ex.note=todayLog.note;
-  renderLog();
+    var r=await sb.from("logs").upsert({user_id:user.id,date:todayKey(),day_idx:todayIdx(),theme:PLAN[todayIdx()]?PLAN[todayIdx()].theme:"",done:todayLog.done,difficulty:todayLog.difficulty,pain:todayLog.pain,note:todayLog.note},{onConflict:"user_id,date"});
+    if(r.error){console.error(r.error);alert("保存失败: "+r.error.message);return;}
+    var ex=allLogs.find(function(l){return l.date===todayKey();});
+    if(!ex){ex={date:todayKey(),day_idx:todayIdx(),theme:PLAN[todayIdx()]?PLAN[todayIdx()].theme:""};allLogs.unshift(ex);}
+    ex.done=todayLog.done;ex.difficulty=todayLog.difficulty;ex.pain=todayLog.pain;ex.note=todayLog.note;
+    renderLog();
   }catch(e){console.error("persist error:",e);alert("保存失败，请检查网络");}
 }
 
-// ---- 计划总览 ----
+// ---- Overview ----
 function renderOverview(){
   var t=$("weekTable");if(!t||!PLAN.length)return;
   var h='<table><tr><th></th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr>';
   var order=[1,2,3,4,5,6,0];
   h+='<tr><td>主题</td>';order.forEach(function(i){h+='<td>'+(PLAN[i]?PLAN[i].theme.replace(/·/g,'<br>'):'')+'</td>';});h+='</tr>';
   h+='<tr><td>视频</td>';order.forEach(function(i){var n=PLAN[i]?PLAN[i].vids.length:0;h+='<td>'+n+'条</td>';});h+='</tr>';
-  h+='<tr><td>提醒</td><td colspan="7" class="muted">每天 20:30 微信推送</td></tr></table>';
+  h+='<tr><td>提醒</td><td colspan="7" class="muted">每天 20:30 App 推送</td></tr></table>';
   t.innerHTML=h;
 }
 
-// ---- 今日跟练 ----
+// ---- Today Player ----
 function renderToday(){
-  if(!PLAN.length)return;
-  var p=PLAN[todayIdx()];if(!p)return;
+  var pc=$("playerCard");if(!pc)return;
+  if(!PLAN.length){pc.innerHTML='<div class="muted">计划加载中…</div>';return;}
+  var p=PLAN[todayIdx()];if(!p){pc.innerHTML='<div class="muted">今日无计划</div>';return;}
   var log=allLogs.find(function(l){return l.date===todayKey();});
   var done=log?log.done:false;
+  var vid=p.vids[curVi]||p.vids[0];if(!vid){pc.innerHTML='<div class="muted">无视频</div>';return;}
+  if(curVi>=p.vids.length)curVi=0;
   var h='<div class="day-head">'+p.name+'<span class="th">'+p.theme+'</span></div>';
   h+='<div class="muted">共'+p.vids.length+'条视频，逐条跟着练</div>';
   if(p.vids.length>1){
@@ -247,11 +305,10 @@ function renderToday(){
     h+='</div>';
   }
   h+='<div class="vid-frame"><iframe id="vidFrame" src="'+getVidEmbed(todayIdx(),curVi)+'" allowfullscreen scrolling="no"></iframe></div>';
-  h+='<div class="vid-title">▶ '+p.vids[curVi].title+(p.vids[curVi].dur?'<span class="dur">'+p.vids[curVi].dur+'</span>':'')+'</div>';
+  h+='<div class="vid-title">▶ '+vid.title+(vid.dur?'<span class="dur">'+vid.dur+'</span>':'')+'</div>';
   h+='<details><summary>替换这条视频（粘贴 B站/YouTube 链接）</summary><input type="url" id="repInput" placeholder="粘贴 bilibili.com/video/BV... 或 youtube.com/watch?v=..."><button class="link-btn" id="repBtn">替换并保存</button> <button class="link-btn" id="resetBtn">恢复默认</button></details>';
   h+='<div class="ex-points">📌 今日要点：'+p.points+'</div>';
   h+='<button class="done-btn'+(done?" checked":"")+'" id="doneBtn">'+(done?"✅ 今日已完成":"完成今日打卡")+'</button>';
-  var pc=$("playerCard");if(!pc)return;
   pc.innerHTML=h;
   if(p.vids.length>1){document.querySelectorAll("#vidSwitch button").forEach(function(b){b.onclick=function(){curVi=parseInt(b.dataset.vi);renderToday();};});}
   var db=$("doneBtn");
@@ -262,14 +319,13 @@ function renderToday(){
   if(rsb)rsb.onclick=function(){localStorage.removeItem("pc-vid-"+todayIdx()+"-"+curVi);renderToday();};
 }
 
-// ---- 打卡反馈 ----
+// ---- Log/Feedback ----
 function renderLogAccount(){
   var c=$("logAccount");if(!c)return;
   if(user){c.innerHTML='<div class="muted">已登录 <b>'+escapeHtml(user.email)+'</b> · 打卡与反馈跨设备同步中</div>';}
-  else{c.innerHTML='<div class="warn">未登录：打卡和反馈不会同步。请在页面顶部注册/登录（手机电脑用同一账号）。</div>';}
+  else{c.innerHTML='<div class="warn">⚠️ 未登录：打卡和反馈不会同步。请在页面顶部注册/登录（手机电脑用同一账号）。</div>';}
 }
 function renderLog(){
-  // streak + calendar
   var doneDates={};allLogs.forEach(function(l){if(l.done)doneDates[l.date]=1;});
   var streak=0,d=new Date();
   if(!doneDates[todayKey()]){d.setDate(d.getDate()-1);}
@@ -277,21 +333,30 @@ function renderLog(){
   var sn=$("streakNum");if(sn)sn.textContent=streak;
   var total=Object.keys(doneDates).length;
   var tn=$("totalNum");if(tn)tn.textContent="累计 "+total+" 天";
-  var grid=$("calGrid");if(grid)grid.innerHTML="";
-  var now=new Date();
-  if(grid)for(var i=29;i>=0;i--){var dd=new Date(now);dd.setDate(now.getDate()-i);var k=dd.toISOString().slice(0,10);var dn=doneDates[k];var isT=k===todayKey();grid.innerHTML+='<div class="day'+(dn?" done":"")+(isT?" today":"")+'">'+(dd.getMonth()+1)+"/"+dd.getDate()+"</div>";}
-  // done button
-  var db=$("doneBtn");
-  if(db){db.textContent=todayLog.done?"✅ 今日已完成":"完成今日打卡";db.classList.toggle("checked",todayLog.done);
-  db.onclick=async function(){if(!user){alert("请先在顶部登录。");return;}todayLog.done=!todayLog.done;await persist();};
-  // feedback opts reflect todayLog
+  var grid=$("calGrid");
+  if(grid){
+    grid.innerHTML="";
+    var now=new Date();
+    for(var i=29;i>=0;i--){var dd=new Date(now);dd.setDate(now.getDate()-i);var k=dd.toISOString().slice(0,10);var dn=doneDates[k];var isT=k===todayKey();grid.innerHTML+='<div class="day'+(dn?" done":"")+(isT?" today":"")+'">'+(dd.getMonth()+1)+"/"+dd.getDate()+"</div>";}
   }
-  document.querySelectorAll("#diffOpts label").forEach(function(l){l.classList.toggle("on",l.dataset.v===todayLog.difficulty);l.onclick=function(){todayLog.difficulty=(todayLog.difficulty===l.dataset.v?"":l.dataset.v);renderLog();};});
-  document.querySelectorAll("#painOpts label").forEach(function(l){l.classList.toggle("on",l.dataset.v===todayLog.pain);l.onclick=function(){todayLog.pain=(todayLog.pain===l.dataset.v?"":l.dataset.v);renderLog();};});
+  var db=$("doneBtn");
+  if(db){
+    db.textContent=todayLog.done?"✅ 今日已完成":"完成今日打卡";
+    db.classList.toggle("checked",todayLog.done);
+    db.onclick=async function(){if(!user){alert("请先在顶部登录。");return;}todayLog.done=!todayLog.done;await persist();};
+  }
+  document.querySelectorAll("#diffOpts label").forEach(function(l){
+    l.classList.toggle("on",l.dataset.v===todayLog.difficulty);
+    l.onclick=function(){todayLog.difficulty=(todayLog.difficulty===l.dataset.v?"":l.dataset.v);renderLog();};
+  });
+  document.querySelectorAll("#painOpts label").forEach(function(l){
+    l.classList.toggle("on",l.dataset.v===todayLog.pain);
+    l.onclick=function(){todayLog.pain=(todayLog.pain===l.dataset.v?"":l.dataset.v);renderLog();};
+  });
   var ni=$("noteInput");if(ni)ni.value=todayLog.note||"";
-  var sf=$("saveFeedback");if(sf)sf.onclick=async function(){if(!user){alert("请先在顶部登录。");return;}todayLog.note=$("noteInput").value.trim();await persist();showRecommendation();};
+  var sf=$("saveFeedback");
+  if(sf)sf.onclick=async function(){if(!user){alert("请先在顶部登录。");return;}todayLog.note=$("noteInput").value.trim();await persist();showRecommendation();};
   showRecommendation();
-  // history
   var hc=$("historyCard");if(!hc)return;
   var recent=allLogs.filter(function(l){return l.note||l.difficulty||l.pain;}).slice(0,5);
   if(!recent.length){hc.innerHTML="";return;}
@@ -317,7 +382,7 @@ function showRecommendation(){
   r.innerHTML=msg;r.className="rec "+cls;
 }
 
-// ---- 要点速查 ----
+// ---- Library ----
 function renderLibrary(){
   var c=$("libContent");if(!c)return;
   var h="<h2>📚 动作要点速查</h2><p class=muted>跟视频时的动作要领参考，帮助感知标准动作与幅度。</p>";
