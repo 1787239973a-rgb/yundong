@@ -4,21 +4,25 @@ var today = new Date();
 var dow = today.getDay();
 var p = plan.days.find(function (d) { return d.idx === dow; }) || plan.days[0];
 var vids = p.videos.map(function (v, i) {
-  return '<p><b>' + (i + 1) + '. ' + v.title + '</b> <span style="color:#fbbf24">' + (v.dur || '') + '</span></p>';
-}).join('');
-var content =
-  '<h3>📅 ' + p.name + ' · ' + p.theme + '</h3>' +
-  '<p>⏰ 建议完成时间：' + (plan.defaultTime || '20:30') + ' 左右</p>' +
-  vids +
-  '<p style="background:#1a1a2e;padding:10px;border-radius:8px;font-size:13px;color:#aaa">💡 ' + p.points + '</p>' +
-  '<p>⚠️ 颈椎椎间盘突出者：幅度减半、疼痛即停。</p>' +
-  '<p><a href="' + plan.siteUrl + '">👉 点这里打开跒练页面</a></p>' +
-  '<p style="font-size:12px;color:#666">训练结束后回到网站填写今日反馈</p>';
+  return (i + 1) + '. ' + v.title + ' (' + (v.dur || '') + ')';
+}).join('\n');
+var lines = [
+  '📅 ' + p.name + ' · ' + p.theme,
+  '⏰ 建议完成时间：' + (plan.defaultTime || '20:30') + ' 左右',
+  '',
+  vids,
+  '',
+  '💡 ' + p.points,
+  '⚠️ 颈椎椎间盘突出者：幅度减半、疼痛即停。',
+  '👉 跟练页面：' + plan.siteUrl,
+  '训练结束后回到网站填写今日反馈'
+];
+var content = lines.join('\n');
 var body = {
   token: process.env.PUSH_TOKEN,
   title: '🏋️ 今日体态训练 · ' + p.theme,
   content: content,
-  template: 'html',
+  template: 'txt',
   channel: 'clawbot'
 };
 fetch('https://www.pushplus.plus/send', {
