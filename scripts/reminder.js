@@ -23,7 +23,7 @@ var body = {
   title: '🏋️ 今日体态训练 · ' + p.theme,
   content: content,
   template: 'txt',
-  channel: 'clawbot'
+  channel: 'app'
 };
 fetch('https://www.pushplus.plus/send', {
   method: 'POST',
