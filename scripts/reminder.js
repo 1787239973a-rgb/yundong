@@ -19,7 +19,7 @@ var body = {
   title: '🏋️ 今日体态训练 · ' + p.theme,
   content: content,
   template: 'html',
-  channel: 'wechat'
+  channel: 'clawbot'
 };
 fetch('https://www.pushplus.plus/send', {
   method: 'POST',
